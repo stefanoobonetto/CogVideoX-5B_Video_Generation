@@ -7,7 +7,6 @@ from diffusers.utils import export_to_video
 from transformers import T5EncoderModel
 
 # Models: "THUDM/CogVideoX-2b" or "THUDM/CogVideoX-5b"
-model_id = "THUDM/CogVideoX-5b"
 
 # Thank you [@camenduru](https://github.com/camenduru)!
 # The reason for using checkpoints hosted by Camenduru instead of the original is because they exported
@@ -15,8 +14,14 @@ model_id = "THUDM/CogVideoX-5b"
 # model was saved with "10GB" as the max shard size, which causes the Colab CPU RAM to be insufficient
 # leading to OOM (on the CPU)
 
-transformer = CogVideoXTransformer3DModel.from_pretrained("camenduru/cogvideox-5b-float16", subfolder="transformer", torch_dtype=torch.float16)
-text_encoder = T5EncoderModel.from_pretrained("camenduru/cogvideox-5b-float16", subfolder="text_encoder", torch_dtype=torch.float16)
+model_id = "THUDM/CogVideoX-5b"
+model_string = "cogvideox-5b"
+
+# model_id = "THUDM/CogVideoX-2b"
+# model_string = "cogvideox-2b"
+
+transformer = CogVideoXTransformer3DModel.from_pretrained(f"camenduru/{model_string}-float16", subfolder="transformer", torch_dtype=torch.float16)
+text_encoder = T5EncoderModel.from_pretrained(f"camenduru/{model_string}-float16", subfolder="text_encoder", torch_dtype=torch.float16)
 vae = AutoencoderKLCogVideoX.from_pretrained(model_id, subfolder="vae", torch_dtype=torch.float16)
 
 # Create pipeline and run inference
@@ -32,7 +37,6 @@ pipe.enable_sequential_cpu_offload()
 # pipe.vae.enable_tiling()
 
 plain_prompts = {
-    # "Soldier" : "A sad soldier during war.",
     "Soldier" : "A weary soldier, clad in a dusty, camouflage uniform, stands solemnly in front of the camera, his eyes reflecting a deep sadness and resignation. His face, marked by the grime of battle and the weight of impending conflict, conveys a poignant awareness that the war is imminent. The background is a blur of military activity, hinting at the chaos about to unfold. His posture is rigid yet somehow defeated, as he clutches his helmet in one hand, a symbol of the protection and burden he carries. The somber lighting casts shadows over his features, emphasizing the heavy toll of his duty and the somber realization that his time to face the horrors of war has arrived.",
     "Ball" : "A small, brightly colored rubber ball bounces rhythmically in slow motion against a wooden floor in a sunlit room. Each time the ball hits the floor, it flattens slightly before springing back into its round shape, reaching different heights with each bounce. The camera is set close to the floor, capturing the textures of the wood grain and the way sunlight highlights the ball’s surface. As it bounces, shadows shift dynamically around it, creating a sense of depth and movement.",
     "Car" : "A sleek, black sports car glides effortlessly through a vibrant cityscape at dusk, its polished surface reflecting the neon lights and towering skyscrapers. The scene transitions to a close-up of the car's grille, highlighting its intricate design and glowing headlights. Next, the camera pans to the driver, a confident man in a stylish leather jacket, his hands gripping the steering wheel with ease. The car accelerates smoothly, leaving a trail of soft, glowing taillights against the backdrop of a starlit night, capturing the essence of luxury and speed.",
@@ -50,14 +54,22 @@ plain_prompts = {
     "Crocodile" : "A massive crocodile basks on a riverbank, its scaly, olive-green skin glistening under the tropical sun. Its powerful jaws are slightly agape, revealing rows of sharp, white teeth. The creature's eyes, small but piercing, survey the surroundings with a blend of lethargy and alertness. The river flows gently beside it, reflecting the lush greenery of the jungle canopy above. As the scene shifts, the crocodile slides into the water with a graceful, yet menacing ease, creating ripples that disturb the serene surface, all while maintaining its regal and formidable presence in the heart of the wild.",
     "Farmer" : "A rugged farmer, clad in a weathered denim jacket, dusty overalls, and a wide-brimmed straw hat, stands amidst a golden wheat field at sunset. His calloused hands gently cradle a freshly harvested ear of corn, his face etched with lines of wisdom and resilience. The warm, amber glow of the setting sun bathes the scene, casting long shadows and highlighting the rich, earthy tones of the soil. As he looks out over his sprawling farm, a sense of pride and connection to the land emanates from his weathered features, embodying the timeless spirit of agriculture.",
     "Pilot" : "A seasoned pilot, clad in a sleek black flight suit with a white stripe down the leg, stands confidently in a vast, dimly lit hangar. His aviator sunglasses reflect the soft glow of overhead lights, and his hands rest casually on his hips. The scene shifts to show him striding purposefully towards a state-of-the-art fighter jet, its metallic surface gleaming under the hangar's lights. As he approaches, he reaches up to adjust his pilot's cap, revealing a hint of a determined smile. The background features rows of advanced aircraft and bustling ground crew, emphasizing the high-stakes atmosphere of a military airbase. The pilot's posture exudes authority and readiness, capturing the essence of a skilled aviator preparing for a critical mission.",
-    "TaxiDriver" : "A seasoned taxi driver, sporting a classic black cap and a navy blue jacket, navigates the bustling city streets with a focused yet weary expression. The interior of his vintage yellow cab is filled with small trinkets and a worn-out map, reflecting years of service. As he drives, the cityscape whirls past, showcasing neon signs and towering skyscrapers. A close-up reveals his weathered hands gripping the steering wheel, while his eyes briefly meet the rearview mirror, hinting at countless stories shared with passengers. The scene transitions to him pausing at a red light, glancing at a photo of his family taped to the dashboard, a silent testament to his dedication and the life he supports behind the wheel."
+    "TaxiDriver" : "A seasoned taxi driver, sporting a classic black cap and a navy blue jacket, navigates the bustling city streets with a focused yet weary expression. The interior of his vintage yellow cab is filled with small trinkets and a worn-out map, reflecting years of service. As he drives, the cityscape whirls past, showcasing neon signs and towering skyscrapers. A close-up reveals his weathered hands gripping the steering wheel, while his eyes briefly meet the rearview mirror, hinting at countless stories shared with passengers. The scene transitions to him pausing at a red light, glancing at a photo of his family taped to the dashboard, a silent testament to his dedication and the life he supports behind the wheel.",
+    "Tiger": "A magnificent tiger with a vibrant orange coat and bold black stripes prowls silently through a dense jungle. Its muscular body moves fluidly, each step purposeful and deliberate. The camera focuses on its piercing amber eyes, which radiate a mix of intelligence and untamed power. The tiger pauses near a sunlit clearing, its fur glowing against the backdrop of lush green foliage. A distant roar echoes, blending with the rustle of leaves, emphasizing the tiger's dominance in this wild and verdant domain.",
+    "RoadFullofCars": "A bustling urban highway at rush hour, packed with cars of various shapes, sizes, and colors, stretches into the horizon under a cloudy sky. The sound of honking horns and the hum of engines fills the air as vehicles inch forward in a seemingly endless line. The camera pans to a sleek, black sedan weaving skillfully through the traffic, contrasting sharply with an old, rusted pickup nearby. The scene transitions to an aerial view, revealing a labyrinth of intersecting roads and overpasses, capturing the chaos and energy of a city on the move.",
+    "River": "A tranquil river meanders through a picturesque valley, its clear, shimmering waters reflecting the vibrant blue sky above. The camera zooms in on the gentle ripples created by a family of ducks paddling along the surface. On the riverbank, tall reeds sway in the breeze, and a lone fisherman sits patiently, his silhouette framed by the golden hues of a setting sun. The scene transitions to a close-up of the water, revealing small fish darting beneath the surface and the intricate patterns of light dancing on the riverbed.",
+    "Shore": "A serene shoreline stretches endlessly, where the golden sands meet the crystal-clear waters of the ocean. Waves gently lap against the shore, creating a soothing rhythm as tiny crabs scuttle across the sand. The horizon is painted with hues of orange and pink as the sun begins to set, casting a warm glow over the scene. A lone seagull soars above, its shadow gliding across the rippling water. The camera lingers on a piece of driftwood, weathered and smooth, lying half-buried in the sand, a testament to the timeless dance between land and sea.",
+    "Tractor": "A rugged, green tractor sits amidst a sprawling field of golden wheat, its massive wheels caked with dried mud. The sun casts a warm, amber glow, highlighting the faded paint and sturdy frame of the machine. A farmer, clad in a flannel shirt and straw hat, climbs into the driver's seat, his figure silhouetted against the wide expanse of the open sky. As the tractor roars to life, it begins to plow through the field, leaving neat, parallel lines in its wake, embodying the spirit of hard work and harvest.",
+    "Airplane": "A gleaming commercial airplane taxis on a sunlit runway, its massive engines emitting a low, steady hum. The camera pans across its sleek, white fuselage adorned with the vibrant logo of an international airline. As the plane accelerates, it lifts gracefully into the air, wings tilting slightly as it ascends into the azure sky. The scene transitions to an interior view, where passengers settle into their seats, gazing out of oval windows at the shrinking cityscape below. The final shot captures the airplane soaring above a sea of fluffy clouds, a symbol of innovation and connection.",
+    "Rocket": "A towering rocket, clad in gleaming white and black panels, stands poised on its launchpad against a backdrop of a fiery orange sunset. Plumes of smoke and steam billow from its base as countdown numbers flash on a nearby screen. The camera zooms in on the rocket's powerful engines, which ignite with a thunderous roar, propelling it skyward in a blaze of light and energy. As it ascends, the view shifts to a close-up of its nose cone piercing through the atmosphere, leaving a trail of white contrails against the vast, darkening sky. The final scene reveals the Earth below, a beautiful blue marble, as the rocket continues its journey into space.",
+    "Chef": "A masterful chef in a crisp white jacket and tall, starched hat stands confidently in a bustling, high-end restaurant kitchen. His hands move with practiced precision as he chops vibrant vegetables on a wooden cutting board, the rhythmic sound of the knife blending with the background hum of the kitchen. A sizzling pan emits a cloud of fragrant steam as he expertly flips a piece of golden-brown fish. The chef pauses to sprinkle a pinch of herbs over the dish, his face reflecting both concentration and passion. The final scene shows the plated masterpiece—a harmonious blend of colors and textures—being served to a delighted guest.",
+    "Doctor": "A compassionate doctor, clad in a spotless white coat and a stethoscope draped around her neck, stands in a brightly lit hospital room. Her warm smile reassures a young patient seated on the examination table, whose small hand is wrapped in hers. The room is filled with medical instruments, neatly organized on counters, and a monitor displaying steady vital signs. The scene transitions to the doctor consulting with colleagues, her expression thoughtful as they review a complex case on a tablet. The final shot captures her stepping out of the hospital, her determined gaze hinting at a day well-spent saving lives.",
+    "Drone" : "A sleek, black drone ascends swiftly from a lush green meadow, its propellers whirring softly as it gains altitude. The camera mounted beneath captures the vibrant tapestry of wildflowers below, their colors bursting in the morning sunlight. The drone glides over a serene lake, reflecting the azure sky and fluffy white clouds. It then navigates through a dense forest, weaving between towering trees and revealing hidden clearings. As it reaches a majestic mountain peak, the drone hovers, showcasing a breathtaking panoramic view of the sprawling landscape, the horizon stretching infinitely, encapsulating the awe-inspiring beauty of nature from a bird's-eye perspective.",
+    "Dolphin" : "A sleek, bottlenose dolphin gracefully arcs through crystal-clear tropical waters, its shimmering gray skin glistening under the golden sun. The scene opens with the dolphin playfully leaping from the waves, a spray of water droplets catching the light. As it descends, it twists elegantly, showcasing its streamlined body and intelligent eyes. The background reveals a vibrant coral reef teeming with colorful fish, adding a lively contrast. The dolphin then surfaces, blowing a gentle mist from its blowhole, before diving deep, leaving a trail of bubbles. The final shot captures it gliding effortlessly alongside the boat, its dorsal fin slicing through the serene sea, embodying the freedom and beauty of marine life.",
+    "PolarBear" : "A majestic polar bear, with a thick, pristine white coat, lumbers gracefully across the icy tundra, its powerful paws leaving distinct imprints in the snow. The bear's piercing blue eyes scan the horizon, reflecting both intelligence and a deep connection to the Arctic wilderness. As it moves, the bear's fur ripples in the cold wind, highlighting its robust build and adaptability to the harsh environment. The backdrop features a breathtaking expanse of ice floes and a clear, azure sky, emphasizing the bear's solitude and the vast, untouched beauty of its natural habitat."
 }
 
-def convert_to_prompt(key, description):
-    """
-    Converts a dictionary entry into a formatted prompt string.
-    """
-    
+def convert_to_prompt(description):    
     sentences = description.split(". ")
 
     prompt = "prompt = (\n"
@@ -72,14 +84,11 @@ def convert_to_prompt(key, description):
     return prompt
 
 for k, v in plain_prompts.items():
-    prompt = convert_to_prompt(k, v)
-
-    # video = pipe(prompt=prompt, guidance_scale=6, use_dynamic_cfg=True, num_inference_steps=10, num_frames=12).frames[0]
+    prompt = convert_to_prompt(v)
     
-    print("\n\nGenerating a synthetic image of a ", k)
+    print("\n\nGenerating a synthetic video of a ", k)
     
-    video = pipe(prompt=prompt, guidance_scale=6, use_dynamic_cfg=True, num_inference_steps=20, num_frames=24).frames[0]
+    video = pipe(prompt=prompt, guidance_scale=6, use_dynamic_cfg=True, num_inference_steps=18, num_frames=24).frames[0]
     
-    
-    export_to_video(video, f"results/{k}_Fake.mp4", fps=6)
+    export_to_video(video, f"results_{model_string}/{k}_Fake.mp4", fps=6)
 
