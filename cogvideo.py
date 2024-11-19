@@ -78,7 +78,7 @@ for k, v in plain_prompts.items():
     
     print("\n\nGenerating a synthetic image of a ", k)
     
-    video = pipe(prompt=prompt, guidance_scale=6, use_dynamic_cfg=True, num_inference_steps=10, num_frames=24).frames[0]
+    video = pipe(prompt=prompt, guidance_scale=6, use_dynamic_cfg=True, num_inference_steps=20, num_frames=24).frames[0]
     
     
     export_to_video(video, f"results/{k}_Fake.mp4", fps=6)
